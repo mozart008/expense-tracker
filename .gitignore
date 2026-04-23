@@ -1,0 +1,61 @@
+# ========================
+# Root / Tools
+# ========================
+.vscode/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+
+# ========================
+# Backend (.NET / C#)
+# ========================
+# Build results
+[Dd]ebug/
+[Rr]elease/
+x64/
+x86/
+bin/
+obj/
+
+# Package restore artifacts
+node_modules/
+.nuget/
+*.nuget.props
+*.nuget.targets
+
+# Entity Framework / Databases
+*.db
+*.db-journal
+*.sqlite
+*.sqlite-journal
+
+# ========================
+# Frontend (React / Node)
+# ========================
+# Dependencies
+frontend/node_modules/
+frontend/.pnp
+frontend/.pnp.js
+
+# Testing
+frontend/coverage/
+
+# Production build
+frontend/build/
+frontend/dist/
+
+# Misc
+frontend/.eslintcache
+frontend/npm-debug.log*
+frontend/yarn-debug.log*
+frontend/yarn-error.log*
+
+# ========================
+# Environment / Secrets
+# ========================
+#.env
+#appsettings.Development.json
+##appsettings.Local.json
+
