@@ -3,18 +3,22 @@ import type { ReactNode } from 'react'
 type ColumnDefinition<T> = {
   headerName: string
   field: keyof T
+  dataType: 'text' | 'number' | 'date'
+  readonly: boolean
+  isRequired: boolean
+  defaultValue?: string | number
 }
 
 type TableProps<T> = {
   data: T[]
   columnDefinitions: readonly ColumnDefinition<T>[]
   extraRow?: ReactNode
+  editable?: boolean
 }
 
 export default function Table<T extends Record<string, unknown>>({
   data,
   columnDefinitions,
-  extraRow,
 }: TableProps<T>) {
   return (
     <div className="overflow-x-auto rounded-lg border border-slate-200">
@@ -38,7 +42,6 @@ export default function Table<T extends Record<string, unknown>>({
               ))}
             </tr>
           ))}
-          {extraRow}
         </tbody>
       </table>
     </div>

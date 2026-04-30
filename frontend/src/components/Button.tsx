@@ -11,7 +11,7 @@ type ButtonProps = {
 
 const variantClasses: Record<ButtonVariant, string> = {
   primary: 'bg-emerald-600 text-white hover:bg-emerald-500',
-  secondary: 'bg-slate-500 text-white hover:bg-slate-400',
+  secondary: 'bg-transparent text-inherit hover:bg-slate-100',
 }
 
 const sizeClasses: Record<ButtonSize, string> = {
