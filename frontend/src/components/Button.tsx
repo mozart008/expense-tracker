@@ -7,6 +7,7 @@ type ButtonProps = {
   children: ReactNode
   variant?: ButtonVariant
   size?: ButtonSize
+  cursor?: 'pointer' | 'default'
 } & ButtonHTMLAttributes<HTMLButtonElement>
 
 const variantClasses: Record<ButtonVariant, string> = {
@@ -25,12 +26,14 @@ export default function Button({
   size = 'md',
   className = '',
   type = 'button',
+  cursor = 'pointer',
   ...buttonProps
 }: ButtonProps) {
   return (
     <button
       className={`rounded transition-colors ${variantClasses[variant]} ${sizeClasses[size]} ${className}`.trim()}
       type={type}
+      style={{ cursor }}
       {...buttonProps}
     >
       {children}
