@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import Button from '../../../components/Button'
 import Modal from '../../../components/Modal'
 import type { Transaction } from '../Transactions'
@@ -7,6 +7,7 @@ type TransactionFormModalProps = {
     isOpen: boolean
     onClose: () => void
     onSave?: (transaction: Transaction) => void
+    draftTransaction?: Transaction | null
 }
 
 const getTodayDate = () => new Date().toISOString().split('T')[0]
@@ -20,14 +21,8 @@ const defaultDraft = (): Transaction => ({
     id: '',
 })
 
-export default function TransactionFormModal({ isOpen, onClose, onSave }: TransactionFormModalProps) {
-    const [draft, setDraft] = useState<Transaction>(defaultDraft())
-
-    useEffect(() => {
-        if (isOpen) {
-            setDraft(defaultDraft())
-        }
-    }, [isOpen])
+export default function TransactionFormModal({ isOpen, onClose, onSave, draftTransaction }: TransactionFormModalProps) {
+    const [draft, setDraft] = useState<Transaction>(draftTransaction ?? defaultDraft())
 
     const handleChange = (field: keyof Transaction, value: string) => {
         if (field === 'unitPrice' || field === 'quantity') {

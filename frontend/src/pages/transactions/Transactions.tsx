@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import Layout from '../../components/Layout'
 import Table from '../../components/table/Table'
 import Toolbar from './components/Toolbar'
@@ -17,7 +18,7 @@ export type Transaction = {
 const getTodayDate = () => new Date().toISOString().split('T')[0]
 
 const columnDefinitions = [
-  { headerName: 'Id', field: 'id', dataType: 'text', readonly: true, isRequired: true },
+  { headerName: 'Id', field: 'id', dataType: 'text', readonly: true, isRequired: true, hidden: true },
   { headerName: 'Date', field: 'date', dataType: 'date', readonly: false, isRequired: true, defaultValue: getTodayDate() },
   { headerName: 'description', field: 'description', dataType: 'text', readonly: false, isRequired: false },
   { headerName: 'Unit price', field: 'unitPrice', dataType: 'number', readonly: false, isRequired: true },
@@ -26,12 +27,22 @@ const columnDefinitions = [
 ] as const
 
 export default function Transactions() {
-
-  const { saveTransaction, transactions } = useTransaction()
+  const { saveTransaction, transactions, deleteTransaction } = useTransaction()
   const { isTransactionFormModalOpen, handleOpenTransactionFormModal, handleCloseTransactionFormModal } = useTransactionForm()
+  const [formDraftTransaction, setFormDraftTransaction] = useState<Transaction | null>(null)
+
+  const handleCloseTransactionModal = () => {
+    setFormDraftTransaction(null)
+    handleCloseTransactionFormModal()
+  }
 
   const handleSave = (draftTransaction: Transaction) => {
     saveTransaction(draftTransaction)
+  }
+
+  const handleEdit = (rowData: Transaction | null) => {
+    setFormDraftTransaction(rowData)
+    handleOpenTransactionFormModal()
   }
 
   return (
@@ -40,8 +51,17 @@ export default function Transactions() {
       <Table
         data={transactions}
         columnDefinitions={columnDefinitions}
+        editRow={handleEdit}
+        deleteRow={deleteTransaction}
       />
-      <TransactionFormModal isOpen={isTransactionFormModalOpen} onClose={handleCloseTransactionFormModal} onSave={handleSave} />
+
+      <TransactionFormModal
+        key={isTransactionFormModalOpen ? 'open' : 'closed'}
+        isOpen={isTransactionFormModalOpen}
+        onClose={handleCloseTransactionModal}
+        onSave={handleSave}
+        draftTransaction={formDraftTransaction}
+      />
     </Layout>
   )
 }

@@ -2,37 +2,10 @@
 import React from 'react'
 import { type Transaction } from '../Transactions'
 
-const sampleTransactions: Transaction[] = [
-  {
-    id: 1,
-    date: '2026-04-24',
-    description: 'Coffee beans',
-    quantity: 2,
-    unitPrice: 12.5,
-    total: 25,
-  },
-  {
-    id: 2,
-    date: '2026-04-24',
-    description: 'Notebook',
-    quantity: 3,
-    unitPrice: 4,
-    total: 12,
-  },
-  {
-    id: 3,
-    date: '2026-04-23',
-    description: 'Taxi fare',
-    quantity: 1,
-    unitPrice: 18.75,
-    total: 18.75,
-  },
-]
-
 const isNewTransaction = (id: Transaction['id']) => id === ''
 
 const useTransaction = () => {
-  const [transactions, setTransactions] = React.useState<Transaction[]>(sampleTransactions)
+  const [transactions, setTransactions] = React.useState<Transaction[]>([] as Transaction[])
 
   const addTransaction = (transaction: Transaction) => {
     setTransactions((prev) => [...prev, { ...transaction, id: crypto.randomUUID() }])
@@ -53,6 +26,10 @@ const useTransaction = () => {
     editTransaction({ ...transaction, total })
   }
 
-  return { saveTransaction, transactions }
+  const deleteTransaction = (id: Transaction['id']) => {
+    setTransactions((prev) => prev.filter((t) => t.id !== id))
+  }
+
+  return { deleteTransaction, saveTransaction, transactions }
 }
 export default useTransaction;
