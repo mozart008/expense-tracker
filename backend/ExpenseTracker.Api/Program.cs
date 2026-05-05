@@ -15,3 +15,6 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+//builder.Services.AddDbContext<ApplicationDbContext>(options =>
+//    options.UseInMemoryDatabase("ExpenseDb"));
