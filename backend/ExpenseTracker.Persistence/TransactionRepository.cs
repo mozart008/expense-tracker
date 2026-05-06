@@ -1,5 +1,6 @@
 ﻿using ExpenseTracker.Core.Services;
 using ExpenseTracker.Domain;
+using ExpenseTracker.Domain.Exceptions;
 using ExpenseTracker.Persistence.Context;
 using Microsoft.EntityFrameworkCore;
 
@@ -31,11 +32,21 @@ namespace ExpenseTracker.Persistence
             return await _context.Transactions.ToListAsync(cancellationToken);
         }
 
-        public async Task<int> UpdateAsync(Transaction transaction, CancellationToken cancellationToken)
+        public async Task<Transaction> UpdateAsync(Transaction transaction, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
-            //await _context.Transactions.Where(o => o.Id == transaction.Id)
-            //    .ExecuteUpdateAsync(setters => setters.SetProperty(t => t.UnitPrice, transaction.UnitPrice), cancellationToken);
+            var existingTransaction = await _context.Transactions.FindAsync(transaction.Id);
+
+            if (existingTransaction is null) 
+                throw new BadRequestException($"Transaction Id: {transaction.Id} does not exists.");
+
+            existingTransaction.Date = transaction.Date;
+            existingTransaction.Description = transaction.Description;
+            existingTransaction.UnitPrice = transaction.UnitPrice;
+            existingTransaction.Quantity = transaction.Quantity;
+            existingTransaction.Total = transaction.Total;
+
+            await _context.SaveChangesAsync(cancellationToken);
+            return existingTransaction;
         }
     }
 }
