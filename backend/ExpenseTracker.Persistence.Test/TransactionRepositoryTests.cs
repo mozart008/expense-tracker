@@ -1,4 +1,5 @@
 ﻿using ExpenseTracker.Domain;
+using ExpenseTracker.Domain.Exceptions;
 using ExpenseTracker.Persistence.Context;
 using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
@@ -129,10 +130,10 @@ namespace ExpenseTracker.Persistence.Test
             var result = await _repository.UpdateAsync(updatedTransaction, _cancellationToken);
 
             // Assert
-            Assert.That(result, Is.EqualTo(1)); // Should return 1 for one updated record
+            Assert.That(result, Is.TypeOf<Transaction>()); // Should return 1 for one updated record
 
             // Verify the transaction was actually updated
-            var savedTransaction = await _context.Set<Transaction>().FindAsync(transactionId);
+            var savedTransaction = await _context.Transactions.FindAsync(transactionId);
             Assert.That(savedTransaction, Is.Not.Null);
             Assert.That(savedTransaction.Description, Is.EqualTo("Updated Description"));
             Assert.That(savedTransaction.UnitPrice, Is.EqualTo(25.50m));
@@ -141,7 +142,7 @@ namespace ExpenseTracker.Persistence.Test
         }
 
         [Test]
-        public async Task UpdateAsync_WithInvalidId_ShouldReturnZero()
+        public async Task UpdateAsync_WithInvalidId_ShouldThrowBadRequestException()
         {
             // Arrange
             var invalidTransaction = new Transaction(
@@ -155,10 +156,8 @@ namespace ExpenseTracker.Persistence.Test
             };
 
             // Act
-            var result = await _repository.UpdateAsync(invalidTransaction, _cancellationToken);
-
             // Assert
-            Assert.That(result, Is.EqualTo(0));
+            Assert.ThrowsAsync<BadRequestException>(async () => await _repository.UpdateAsync(invalidTransaction, _cancellationToken));     
         }
 
         [Test]

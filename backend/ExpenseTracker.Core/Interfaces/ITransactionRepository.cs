@@ -7,7 +7,7 @@ namespace ExpenseTracker.Core.Services
         Task<List<Transaction>> GetAllAsync(CancellationToken cancellationToken);
         //Task<Transaction> GetById(int id);
         Task<int> AddAsync(Transaction transaction, CancellationToken cancellationToken);
-        Task<int> UpdateAsync(Transaction transaction, CancellationToken cancellationToken);
+        Task<Transaction> UpdateAsync(Transaction transaction, CancellationToken cancellationToken);
         Task Delete(int id, CancellationToken cancellationToken);
     }
 }
