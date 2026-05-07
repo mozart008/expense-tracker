@@ -24,7 +24,11 @@ namespace ExpenseTracker.Persistence
 
         public async Task Delete(int id, CancellationToken cancellationToken)
         {
-            await _context.Transactions.Where(t => t.Id == id).ExecuteDeleteAsync(cancellationToken);
+            var transaction = await _context.Transactions.FindAsync(id);
+            if (transaction is null) throw new BadRequestException($"Delete failed! Transaction with Id: {id} is not found!");
+            
+            _context.Transactions.Remove(transaction);
+            await _context.SaveChangesAsync(cancellationToken);
         }
 
         public async Task<List<Transaction>> GetAllAsync(CancellationToken cancellationToken)
@@ -36,7 +40,7 @@ namespace ExpenseTracker.Persistence
         {
             var existingTransaction = await _context.Transactions.FindAsync(transaction.Id);
 
-            if (existingTransaction is null) 
+            if (existingTransaction is null)
                 throw new BadRequestException($"Transaction Id: {transaction.Id} does not exists.");
 
             existingTransaction.Date = transaction.Date;

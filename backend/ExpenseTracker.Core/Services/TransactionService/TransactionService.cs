@@ -1,7 +1,7 @@
 ﻿using ExpenseTracker.Core.Dtos;
 using ExpenseTracker.Core.Interfaces;
 using ExpenseTracker.Domain;
-using System.ComponentModel.DataAnnotations;
+using ExpenseTracker.Domain.Exceptions;
 
 namespace ExpenseTracker.Core.Services.TransactionService
 {
@@ -16,12 +16,8 @@ namespace ExpenseTracker.Core.Services.TransactionService
 
         public async Task<int> AddTransactionAsync(TransactionDto transactionDto, CancellationToken cancellationToken)
         {
-            if (transactionDto is null) throw new ArgumentNullException(nameof(transactionDto));
-
-            if (transactionDto.UnitPrice < 0) throw new ArgumentException("UnitPrice cannot be negative.", nameof(transactionDto.UnitPrice));
-
-            if (transactionDto.Quantity <= 0) throw new ArgumentException("Quantity must be greater than zero.", nameof(transactionDto.Quantity));
-
+            ValidateTransaction(transactionDto);
+            
             var transaction = new Transaction(
                 transactionDto.Date, 
                 transactionDto.Description, 
@@ -34,14 +30,33 @@ namespace ExpenseTracker.Core.Services.TransactionService
             return id;
         }
 
-        public Task DeleteTransactionAsync(int id, CancellationToken cancellationToken)
+        public async Task DeleteTransactionAsync(int id, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            if (id < 1) throw new BadRequestException($"Delete failed. Invalid Id.");
+
+            await _transactionRepository.Delete(id, cancellationToken);
         }
 
-        public Task<int> EditTransactionAsync(TransactionDto transaction, CancellationToken cancellationToken)
+        public async Task<bool> EditTransactionAsync(TransactionDto transactionDto, CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            ValidateTransaction(transactionDto);
+
+            if (transactionDto.Id is null || transactionDto.Id == 0) 
+                throw new BadRequestException($"Update failed! Transaction Id cannot be null.");
+
+            var transaction = new Transaction(
+                transactionDto.Date,
+                transactionDto.Description,
+                transactionDto.UnitPrice,
+                transactionDto.Quantity
+            )
+            {
+                Id = transactionDto.Id.Value
+            };
+
+            await _transactionRepository.UpdateAsync(transaction, cancellationToken);
+
+            return true;
         }
 
         public async Task<List<TransactionDto>> GetTransactionsAsync(CancellationToken cancellationToken)
@@ -60,6 +75,14 @@ namespace ExpenseTracker.Core.Services.TransactionService
 
             return projectToDtos;
 
+        }
+        private void ValidateTransaction(TransactionDto transactionDto)
+        {
+            if (transactionDto is null) throw new ArgumentNullException(nameof(transactionDto));
+
+            if (transactionDto.UnitPrice < 0) throw new ArgumentException("UnitPrice cannot be negative.", nameof(transactionDto.UnitPrice));
+
+            if (transactionDto.Quantity <= 0) throw new ArgumentException("Quantity must be greater than zero.", nameof(transactionDto.Quantity));
         }
     }
 }
