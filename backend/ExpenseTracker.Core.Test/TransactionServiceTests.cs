@@ -2,6 +2,7 @@
 using ExpenseTracker.Core.Services;
 using ExpenseTracker.Core.Services.TransactionService;
 using ExpenseTracker.Domain;
+using ExpenseTracker.Domain.Exceptions;
 using Moq;
 
 namespace ExpenseTracker.Core.Test;
@@ -91,7 +92,7 @@ public class TransactionServiceTests
             Description = "Test Expense",
             UnitPrice = 25.50m,
             Quantity = 2,
-           Total = 51.00m
+            Total = 51.00m
         };
 
         var expectedId = 123;
@@ -120,7 +121,7 @@ public class TransactionServiceTests
         TransactionDto nullTransaction = null;
 
         // Act & Assert
-        var ex = Assert.ThrowsAsync<ArgumentNullException>(async() => await _transactionService.AddTransactionAsync(nullTransaction, CancellationToken.None));
+        var ex = Assert.ThrowsAsync<ArgumentNullException>(async () => await _transactionService.AddTransactionAsync(nullTransaction, CancellationToken.None));
 
         Assert.That(ex.ParamName, Is.EqualTo("transactionDto"));
         _mockRepository.Verify(repo => repo.AddAsync(It.IsAny<Transaction>(), It.IsAny<CancellationToken>()), Times.Never);
@@ -160,7 +161,7 @@ public class TransactionServiceTests
         };
 
         // Act & Assert
-        var ex = Assert.ThrowsAsync<ArgumentException>(async() =>
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
             await _transactionService.AddTransactionAsync(transactionDto, CancellationToken.None));
 
         Assert.That(ex.Message, Does.Contain("Quantity"));
@@ -184,7 +185,7 @@ public class TransactionServiceTests
             .ThrowsAsync(new InvalidOperationException("Database error"));
 
         // Act & Assert
-        var ex = Assert.ThrowsAsync<InvalidOperationException>(async() =>
+        var ex = Assert.ThrowsAsync<InvalidOperationException>(async () =>
             await _transactionService.AddTransactionAsync(transactionDto, CancellationToken.None));
 
         Assert.That(ex.Message, Is.EqualTo("Database error"));
@@ -217,4 +218,185 @@ public class TransactionServiceTests
             It.Is<Transaction>(t => t.Id == 0), // New entity should have Id = 0
             CancellationToken.None), Times.Once);
     }
+
+    #region EditTransaction
+    [Test]
+    public async Task EditTransactionAsync_WithValidTransaction_ReturnsTrue()
+    {
+        // Arrange
+        var transactionDto = new TransactionDto
+        {
+            Id = 1,
+            Date = DateTime.Now.Date,
+            Description = "Updated Test Expense",
+            UnitPrice = 30.75m,
+            Quantity = 3,
+            Total = 92.25m
+        };
+
+        var updatedTransaction = new Transaction
+        {
+            Id = 1,
+            Date = transactionDto.Date,
+            Description = transactionDto.Description,
+            UnitPrice = transactionDto.UnitPrice,
+            Quantity = transactionDto.Quantity,
+            Total = transactionDto.Total
+        };
+
+        _mockRepository.Setup(repo => repo.UpdateAsync(It.IsAny<Transaction>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(updatedTransaction);
+
+        // Act
+        var result = await _transactionService.EditTransactionAsync(transactionDto, CancellationToken.None);
+
+        // Assert
+        Assert.That(result, Is.EqualTo(true));
+        _mockRepository.Verify(repo => repo.UpdateAsync(
+            It.Is<Transaction>(t =>
+                t.Id == transactionDto.Id &&
+                t.Date == transactionDto.Date &&
+                t.Description == transactionDto.Description &&
+                t.UnitPrice == transactionDto.UnitPrice &&
+                t.Quantity == transactionDto.Quantity &&
+                t.Total == transactionDto.Total),
+            CancellationToken.None), Times.Once);
+    }
+
+    [Test]
+    public async Task EditTransactionAsync_WithNullTransaction_ThrowsArgumentNullException()
+    {
+        // Arrange
+        TransactionDto nullTransaction = null;
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<ArgumentNullException>(async () =>
+            await _transactionService.EditTransactionAsync(nullTransaction, CancellationToken.None));
+
+        Assert.That(ex.ParamName, Is.EqualTo("transactionDto"));
+        _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Transaction>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task EditTransactionAsync_WithNegativeUnitPrice_ThrowsArgumentException()
+    {
+        // Arrange
+        var transactionDto = new TransactionDto
+        {
+            Id = 1,
+            Date = DateTime.Now.Date,
+            Description = "Updated Test Expense",
+            UnitPrice = -15.00m,
+            Quantity = 2,
+            Total = -30.00m
+        };
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await _transactionService.EditTransactionAsync(transactionDto, CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("UnitPrice"));
+        _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Transaction>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task EditTransactionAsync_WithZeroQuantity_ThrowsArgumentException()
+    {
+        // Arrange
+        var transactionDto = new TransactionDto
+        {
+            Id = 1,
+            Date = DateTime.Now.Date,
+            Description = "Updated Test Expense",
+            UnitPrice = 25.50m,
+            Quantity = 0,
+            Total = 0m
+        };
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await _transactionService.EditTransactionAsync(transactionDto, CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("Quantity"));
+        _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Transaction>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task EditTransactionAsync_WithNegativeQuantity_ThrowsArgumentException()
+    {
+        // Arrange
+        var transactionDto = new TransactionDto
+        {
+            Id = 1,
+            Date = DateTime.Now.Date,
+            Description = "Updated Test Expense",
+            UnitPrice = 25.50m,
+            Quantity = -2,
+            Total = -51.00m
+        };
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<ArgumentException>(async () =>
+            await _transactionService.EditTransactionAsync(transactionDto, CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("Quantity"));
+        _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Transaction>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Test]
+    public async Task EditTransactionAsync_WithMissingTransactionId_ThrowsArgumentException()
+    {
+        // Arrange
+        var transactionDto = new TransactionDto
+        {
+            Id = null, // Missing ID for edit operation
+            Date = DateTime.Now.Date,
+            Description = "Updated Test Expense",
+            UnitPrice = 25.50m,
+            Quantity = 2,
+            Total = 51.00m
+        };
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<BadRequestException>(async () =>
+            await _transactionService.EditTransactionAsync(transactionDto, CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("Id"));
+        _mockRepository.Verify(repo => repo.UpdateAsync(It.IsAny<Transaction>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+    #endregion
+
+    #region DeleteTransaction
+    [Test]
+    public async Task DeleteTransactionAsync_WithValidId_CallsRepositoryDelete()
+    {
+        // Arrange
+        var transactionId = 1;
+
+        _mockRepository.Setup(repo => repo.Delete(It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        // Act
+        await _transactionService.DeleteTransactionAsync(transactionId, CancellationToken.None);
+
+        // Assert
+        _mockRepository.Verify(repo => repo.Delete(transactionId, CancellationToken.None), Times.Once);
+    }
+
+    [Test]
+    [TestCase(-1)]
+    [TestCase(0)]
+    public async Task DeleteTransactionAsync_WithInvalidId_ThrowsArgumentException(int invalidId)
+    {
+        // Arrange
+      //  var invalidId = 0;
+
+        // Act & Assert
+        var ex = Assert.ThrowsAsync<BadRequestException>(async () =>
+            await _transactionService.DeleteTransactionAsync(invalidId, CancellationToken.None));
+
+        Assert.That(ex.Message, Does.Contain("Id"));
+        _mockRepository.Verify(repo => repo.Delete(It.IsAny<int>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+    #endregion
 }

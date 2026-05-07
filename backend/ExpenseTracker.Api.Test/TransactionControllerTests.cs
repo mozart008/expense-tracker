@@ -48,7 +48,7 @@ namespace ExpenseTracker.Api.Test
                 .ReturnsAsync(expectedTransactions);
 
             // Act
-            var result = _controller.GetTransactions();
+            var result = _controller.GetTransactions(CancellationToken.None);
 
             // Assert
             _mockTransactionService.Verify(x => x.GetTransactionsAsync(CancellationToken.None), Times.Once);

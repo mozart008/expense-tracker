@@ -6,7 +6,7 @@ namespace ExpenseTracker.Core.Interfaces
     {
         Task<List<TransactionDto>> GetTransactionsAsync(CancellationToken cancellationToken);
         Task<int> AddTransactionAsync(TransactionDto transaction, CancellationToken cancellationToken);
-        Task<int> EditTransactionAsync(TransactionDto transaction, CancellationToken cancellationToken);
+        Task<bool> EditTransactionAsync(TransactionDto transaction, CancellationToken cancellationToken);
         Task DeleteTransactionAsync(int id, CancellationToken cancellationToken);
     }
 }
