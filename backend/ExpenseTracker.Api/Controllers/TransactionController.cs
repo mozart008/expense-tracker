@@ -16,31 +16,31 @@ namespace ExpenseTracker.Api.Controllers
         }
 
         [HttpGet]
-        public IActionResult GetTransactions(CancellationToken cancellationToken)
+        public async Task<IActionResult> GetTransactions(CancellationToken cancellationToken)
         {
-            var transactions = _transactionService.GetTransactionsAsync(cancellationToken);
+            var transactions = await _transactionService.GetTransactionsAsync(cancellationToken);
             // Placeholder for getting transactions logic
             return Ok(transactions);
         }
 
         [HttpPost]
-        public IActionResult AddTransaction(TransactionDto transaction, CancellationToken cancellationToken)
+        public async Task<IActionResult> AddTransaction(TransactionDto transaction, CancellationToken cancellationToken)
         {
-            _transactionService.AddTransactionAsync(transaction, cancellationToken);
+            await _transactionService.AddTransactionAsync(transaction, cancellationToken);
             return Ok();
         }
 
         [HttpPut]
-        public IActionResult EditTransaction(TransactionDto transaction, CancellationToken cancellationToken)
+        public async Task<IActionResult> EditTransaction(TransactionDto transaction, CancellationToken cancellationToken)
         {
-            _transactionService.EditTransactionAsync(transaction, cancellationToken);
+            await _transactionService.EditTransactionAsync(transaction, cancellationToken);
             return Ok();
         }
 
         [HttpDelete("{id}")]
-        public IActionResult DeleteTransaction(int id, CancellationToken cancellationToken)
+        public async Task<IActionResult> DeleteTransaction(int id, CancellationToken cancellationToken)
         {
-            _transactionService.DeleteTransactionAsync(id, cancellationToken);
+            await _transactionService.DeleteTransactionAsync(id, cancellationToken);
             return Ok();
         }
     }
