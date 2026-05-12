@@ -6,7 +6,7 @@ import type { Transaction } from '../Transactions'
 type TransactionFormModalProps = {
     isOpen: boolean
     onClose: () => void
-    onSave?: (transaction: Transaction) => void
+    onSave?: (transaction: Transaction) => void | Promise<void>
     draftTransaction?: Transaction | null
 }
 
@@ -33,9 +33,13 @@ export default function TransactionFormModal({ isOpen, onClose, onSave, draftTra
         setDraft((prev) => ({ ...prev, [field]: value }))
     }
 
-    const handleSave = () => {
-        onSave?.(draft)
-        onClose()
+    const handleSave = async () => {
+        try {
+            await onSave?.(draft)
+            onClose()
+        } catch (err) {
+            console.error(err)
+        }
     }
 
     return (

@@ -1,33 +1,56 @@
 
 import React from 'react'
 import { type Transaction } from '../Transactions'
+import {
+  createTransaction,
+  deleteTransaction as deleteTransactionRequest,
+  getTransactions,
+  updateTransaction,
+} from '../../../services/transaction-service'
 
 const isNewTransaction = (id: Transaction['id']) => id === ''
 
 const useTransaction = () => {
   const [transactions, setTransactions] = React.useState<Transaction[]>([] as Transaction[])
 
-  const addTransaction = (transaction: Transaction) => {
-    setTransactions((prev) => [...prev, { ...transaction, id: crypto.randomUUID() }])
+  React.useEffect(() => {
+    fetchTransactions()
+  }, [])
+
+  const fetchTransactions = async () => {
+    try {
+      const transactions = await getTransactions()
+      setTransactions(transactions)
+    } catch (err) {
+      console.error(err)
+    }
   }
 
-  const editTransaction = (transaction: Transaction) => {
-    setTransactions((prev) =>
-      prev.map((t) => (t.id === transaction.id ? { ...transaction } : t)),
-    )
-  }
-
-  const saveTransaction = (transaction: Transaction) => {
+  const saveTransaction = async (transaction: Transaction) => {
     const total = transaction.unitPrice * transaction.quantity
     if (isNewTransaction(transaction.id)) {
-      addTransaction({ ...transaction, total })
-      return
+      await createTransaction({
+        date: transaction.date,
+        description: transaction.description,
+        unitPrice: transaction.unitPrice,
+        quantity: transaction.quantity,
+      })
+
+    } else {
+      await updateTransaction({ ...transaction, total })
     }
-    editTransaction({ ...transaction, total })
+
+    await fetchTransactions()
   }
 
-  const deleteTransaction = (id: Transaction['id']) => {
-    setTransactions((prev) => prev.filter((t) => t.id !== id))
+  const deleteTransaction = async (id: Transaction['id']) => {
+    if (id === '') return
+    try {
+      await deleteTransactionRequest(id)
+      await fetchTransactions()
+    } catch (err) {
+      console.error(err)
+    }
   }
 
   return { deleteTransaction, saveTransaction, transactions }

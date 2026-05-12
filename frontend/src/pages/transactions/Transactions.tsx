@@ -36,8 +36,8 @@ export default function Transactions() {
     handleCloseTransactionFormModal()
   }
 
-  const handleSave = (draftTransaction: Transaction) => {
-    saveTransaction(draftTransaction)
+  const handleSave = async (draftTransaction: Transaction) => {
+    await saveTransaction(draftTransaction)
   }
 
   const handleEdit = (rowData: Transaction | null) => {
